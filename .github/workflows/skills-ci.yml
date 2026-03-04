@@ -1,0 +1,49 @@
+name: Skills CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-skills:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate skill frontmatter
+        run: ./scripts/validate-skills.sh --no-skills-ref
+
+      - name: Check no placeholder text
+        run: |
+          if grep -ri '\[.*placeholder\]' skills/; then
+            echo "Found placeholder text in skills — remove before merging."
+            exit 1
+          fi
+          echo "No placeholder text found."
+
+      - name: Verify scripts are executable and pass --help
+        run: |
+          failed=0
+          for script in skills/*/scripts/*.sh skills/*/scripts/*.py; do
+            [ -f "$script" ] || continue
+            if [ ! -x "$script" ]; then
+              echo "FAIL: $script is not executable"
+              failed=1
+              continue
+            fi
+            if [[ "$script" == *.py ]]; then
+              python3 "$script" --help > /dev/null 2>&1 || { echo "FAIL: $script --help failed"; failed=1; }
+            else
+              bash "$script" --help > /dev/null 2>&1 || { echo "FAIL: $script --help failed"; failed=1; }
+            fi
+          done
+          if [ "$failed" -eq 1 ]; then exit 1; fi
+          echo "All scripts pass --help."

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Agent Skills Spec
+    url: https://agentskills.io
+    about: Learn about the Agent Skills specification
+  - name: Skills CLI
+    url: https://www.npmjs.com/package/skills
+    about: Install skills with the skills CLI

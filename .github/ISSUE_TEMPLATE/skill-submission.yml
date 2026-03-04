@@ -1,0 +1,64 @@
+name: Skill Submission
+description: Propose a new skill to be added to this repository
+title: "[Skill]: "
+labels: ["new-skill"]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Skill Name
+      description: Proposed skill ID in kebab-case
+      placeholder: e.g., engineering-api-gateway-designer
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What does this skill do? When should an agent activate it?
+      placeholder: |
+        Design and configure API gateways for microservice architectures.
+        Use when you need rate limiting, request routing, authentication middleware,
+        or API composition patterns.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - Engineering
+        - Design
+        - Testing
+        - Data & Analytics
+        - Marketing
+        - Project Management
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: content
+    attributes:
+      label: Proposed Content
+      description: What decision rules, code patterns, or references should this skill include?
+      placeholder: |
+        Decision rules:
+        - When routing to multiple backends, use path-based routing over header-based
+        - When rate limiting, use sliding window over fixed window for smoother traffic
+
+        References:
+        - Kong/NGINX configuration patterns
+        - JWT validation middleware
+        - Request/response transformation
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Submission Checklist
+      options:
+        - label: This skill doesn't overlap significantly with an existing skill
+          required: true
+        - label: I'm willing to contribute a PR for this skill

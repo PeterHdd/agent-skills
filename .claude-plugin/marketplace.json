@@ -1,0 +1,40 @@
+{
+  "name": "agent-skills",
+  "owner": {
+    "name": "PeterHdd"
+  },
+  "metadata": {
+    "description": "Reusable AI specialist skills for engineering, design, marketing, product, project management, support, and testing workflows.",
+    "version": "2.0.0"
+  },
+  "plugins": [
+    {
+      "name": "agent-skills",
+      "source": {
+        "source": "github",
+        "repo": "PeterHdd/agent-skills",
+        "ref": "main"
+      },
+      "description": "18 specialist skills covering engineering, design, marketing, project management, support, and testing.",
+      "version": "2.0.0",
+      "author": {
+        "name": "PeterHdd"
+      },
+      "repository": "https://github.com/PeterHdd/agent-skills",
+      "license": "MIT",
+      "keywords": [
+        "skills",
+        "agents",
+        "engineering",
+        "design",
+        "marketing",
+        "product",
+        "project-management",
+        "support",
+        "testing"
+      ],
+      "category": "development",
+      "skills": "./skills/"
+    }
+  ]
+}
