@@ -1,4 +1,4 @@
-# Specialist Skills
+# Agent Skills
 
 A collection of 18 specialist AI agent skills for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). Each skill gives Claude deep domain expertise — decision rules, production-grade code patterns, reference material, and runnable scripts.
 
