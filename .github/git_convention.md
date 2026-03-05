@@ -47,8 +47,8 @@ chore: add pr template
 
 ```
 feat(engineering-ml-engineer): add fine-tuning reference with lora patterns
-fix(testing-api-tester): fix endpoint discovery for openapi 3.1
+fix(engineering-frontend-developer): fix css grid minmax example
 docs: update readme with new skill count
 chore: add issue templates for bug reports and feature requests
-refactor(design-ui-designer): split token generation into separate reference
+refactor(engineering-backend-architect): split database patterns into separate reference
 ```

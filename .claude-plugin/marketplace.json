@@ -4,7 +4,7 @@
     "name": "PeterHdd"
   },
   "metadata": {
-    "description": "Reusable AI specialist skills for engineering, design, marketing, product, project management, support, and testing workflows.",
+    "description": "9 engineering AI agent skills with decision rules, code patterns, and runnable scripts for frontend, backend, mobile, ML, DevOps, security, system design, and rapid prototyping.",
     "version": "2.0.0"
   },
   "plugins": [
@@ -15,7 +15,7 @@
         "repo": "PeterHdd/agent-skills",
         "ref": "main"
       },
-      "description": "18 specialist skills covering engineering, design, marketing, project management, support, and testing.",
+      "description": "9 engineering skills covering frontend, backend, mobile, ML, DevOps, security, system design, senior development, and rapid prototyping.",
       "version": "2.0.0",
       "author": {
         "name": "PeterHdd"
@@ -26,12 +26,13 @@
         "skills",
         "agents",
         "engineering",
-        "design",
-        "marketing",
-        "product",
-        "project-management",
-        "support",
-        "testing"
+        "devops",
+        "frontend",
+        "backend",
+        "mobile",
+        "ml",
+        "security",
+        "system-design"
       ],
       "category": "development",
       "skills": "./skills/"

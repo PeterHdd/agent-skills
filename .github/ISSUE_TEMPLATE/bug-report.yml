@@ -17,24 +17,15 @@ body:
       label: Skill
       description: Which skill is affected?
       options:
-        - data-analytics-reporter
-        - design-brand-guardian
-        - design-image-prompt-engineer
-        - design-ui-designer
         - engineering-backend-architect
         - engineering-devops-automator
         - engineering-frontend-developer
         - engineering-ml-engineer
         - engineering-mobile-app-builder
         - engineering-rapid-prototyper
+        - engineering-security-engineer
         - engineering-senior-developer
         - engineering-system-designer
-        - marketing-app-store-optimizer
-        - project-manager-senior
-        - support-executive-summary-generator
-        - testing-api-tester
-        - testing-evidence-collector
-        - xr-developer
     validations:
       required: true
 

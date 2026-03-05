@@ -48,6 +48,43 @@ This guide covers infrastructure automation, CI/CD pipeline development, deploym
 ### Compliance
 - Generate automated audit logs recording deployer, commit SHA, and approval; store immutably for retention period.
 
+### Incident Response Protocol
+- **Severity 1 (site down, data loss risk)**: Assemble incident team within 5 minutes. First action: mitigate (rollback, failover, scale up), not diagnose. Communicate status to stakeholders within 15 minutes. Post-mortem within 48 hours.
+- **Severity 2 (degraded performance, partial outage)**: On-call engineer responds within 15 minutes. Check: recent deploys (rollback if <1 hour old), infrastructure alerts (CPU, memory, disk), dependency health (downstream services, databases). Communicate status within 30 minutes.
+- **Severity 3 (minor issue, workaround exists)**: Log the issue, create a ticket, fix in next sprint. No immediate response required.
+- **Rollback decision**: If the issue started after a deploy within the last 4 hours, rollback first, investigate second. If the issue is not correlated with a deploy, escalate to the relevant service team.
+- **Communication template**: "We are aware of [impact description]. [X users / Y% of traffic] are affected. We are [current action]. Next update in [time]."
+
+### Cost Estimation Formulas
+- **Compute (EC2/GCE)**: `monthly_cost = instance_hourly_rate * 730 * instance_count`. Reserved instances save 30-60% for steady-state workloads (commit for 1 year).
+- **Storage (S3/GCS)**: `monthly_cost = storage_GB * $0.023 + requests * $0.0004 (GET) or $0.005 (PUT)`. Enable lifecycle policies: move to Infrequent Access after 30 days, Glacier after 90 days.
+- **Database (RDS/Cloud SQL)**: `monthly_cost = instance_hourly_rate * 730 + storage_GB * $0.115 + IOPS_provisioned * $0.10`. Multi-AZ doubles the instance cost.
+- **Data transfer**: First 1GB/month free. $0.09/GB out to internet. Inter-AZ: $0.01/GB each direction. Cross-region: $0.02/GB. Data transfer is the hidden cost — monitor it.
+- **Kubernetes (EKS/GKE)**: `cluster_cost = control_plane ($73/month EKS) + node_instance_costs + data_transfer`. Spot/preemptible nodes save 60-90% for fault-tolerant workloads.
+- **Rule of thumb**: If cloud bill >$5k/month, hire a FinOps review. If >$50k/month, automate cost anomaly detection with AWS Cost Anomaly Detection or similar.
+
+### Service Selection Decision Trees
+- **Compute**: Lambda/Cloud Functions if <15 min execution, <10GB memory, and request-driven. ECS/Cloud Run for containerized services with consistent traffic. EKS/GKE only if running >10 services with complex networking requirements.
+- **Database**: RDS PostgreSQL for <10TB relational. DynamoDB for key-value at >100k QPS. ElastiCache Redis for caching and session storage. Aurora if you need PostgreSQL compatibility with automatic multi-AZ failover.
+- **Queue/Messaging**: SQS for simple async jobs. SNS + SQS for fan-out. EventBridge for event routing with filtering rules. Kafka (MSK) only for streaming >10k msg/sec with replay.
+- **Storage**: S3 for objects. EFS for shared filesystem (NFS). EBS for block storage (database volumes). Choose storage class based on access frequency.
+- **CDN**: CloudFront for AWS-native. Cloudflare for multi-cloud or DDoS-heavy. Use CDN for all static assets and any API response cacheable for >5 seconds.
+
+## Self-Verification Protocol
+After any infrastructure or pipeline change, verify:
+- **Terraform**: Run `terraform plan` and read every line of the diff. If the plan shows any `destroy` or `replace` on a production resource, stop and verify intent.
+- **CI/CD pipeline**: Trigger a full pipeline run on a non-production branch. Verify every stage passes. Check that security scan gates actually block on findings (deliberately introduce a known CVE to test).
+- **Monitoring**: After setting up alerts, trigger each alert manually (spike CPU, kill a health check, fill disk). Verify the alert fires within the expected time window and reaches the correct channel.
+- **Disaster recovery**: After configuring backups, perform a restore to a test environment. Verify data integrity. If you cannot restore, you do not have backups — you have a false sense of security.
+- **Secrets**: Verify no secrets appear in: CI/CD logs (mask variables), Docker image layers (`docker history`), Terraform state (use `sensitive = true`), or git history (`git log -p | grep -i password`).
+
+## Failure Recovery
+- **Terraform state drift**: Run `terraform plan` to see the drift. If drift is in a non-critical resource, run `terraform apply` to reconcile. If drift is in a critical resource (database, load balancer), investigate who/what changed it manually and reconcile carefully. Never blindly `terraform apply` when state shows unexpected changes.
+- **CI/CD pipeline broken**: Check the last successful run. Diff the pipeline config between last success and current failure. Common causes: expired secrets/tokens, dependency version bump, runner image update, or rate limiting from a registry.
+- **Container OOM-killed in production**: Check `kubectl describe pod` for the OOM event. Increase memory limits if under-provisioned. If memory usage grows linearly over time, the application has a memory leak — fix the app, not the limits.
+- **Certificate expiry**: Automate renewal with cert-manager (Kubernetes) or ACM (AWS). Set alerts for 30, 14, and 7 days before expiry. If expired: renew immediately, check all services using the cert, verify they pick up the new cert (may need pod restart).
+- **Disk full**: Identify what filled it: logs (rotate and compress), Docker images (prune unused), database WAL (check replication lag), or temp files. Fix the root cause; expanding the disk is a temporary measure.
+
 ## Scripts
 
 - `scripts/validate_dockerfile.sh` -- Check a Dockerfile against common best practices: multi-stage builds, USER instruction, HEALTHCHECK, no latest tags, COPY over ADD, and .dockerignore presence. Run with `--help` for usage.

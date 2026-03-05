@@ -1,6 +1,6 @@
 # Agent Skills
 
-A collection of 18 specialist AI agent skills for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). Each skill gives Claude deep domain expertise — decision rules, production-grade code patterns, reference material, and runnable scripts.
+A collection of 9 engineering AI agent skills for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). Each skill gives Claude deep domain expertise — decision rules, production-grade code patterns, reference material, and runnable scripts.
 
 Built to the [Agent Skills Spec](https://agentskills.io).
 
@@ -12,7 +12,7 @@ Install the [skills CLI](https://www.npmjs.com/package/skills):
 # Install a single skill
 npx skills add PeterHdd/agent-skills --skill engineering-frontend-developer
 
-# Install all 18 skills
+# Install all 9 skills
 npx skills add PeterHdd/agent-skills --all
 ```
 
@@ -106,50 +106,19 @@ Claude will implement a mutation queue with AsyncStorage, NetInfo-based sync,
 Firebase push notifications, and Zustand state management with MMKV persistence.
 ```
 
-## Available Skills
-
-### Engineering (8 skills)
+## Available Skills (9 Engineering Skills)
 
 | Skill | What It Does |
 |-------|-------------|
-| `engineering-frontend-developer` | React/Vue/Svelte components, TypeScript patterns, CSS Grid, performance optimization, WCAG accessibility |
-| `engineering-ml-engineer` | PyTorch, HuggingFace Transformers, LoRA/QLoRA fine-tuning, RAG pipelines, scikit-learn, XGBoost, model deployment, quantization |
-| `engineering-backend-architect` | Distributed systems patterns, database optimization, API design, circuit breakers, event-driven architecture |
-| `engineering-devops-automator` | Docker, Kubernetes, Terraform, CI/CD pipelines, monitoring, alerting, secrets management |
-| `engineering-mobile-app-builder` | SwiftUI, Jetpack Compose, React Native, offline-first, push notifications, biometric auth, StoreKit/Play Billing |
-| `engineering-rapid-prototyper` | Next.js/Supabase/Prisma full-stack, shadcn/ui, tRPC, auth, file uploads, rapid MVP scaffolding |
-| `engineering-senior-developer` | Architecture decisions, performance profiling, debugging strategies, code review, incident response, tech debt management |
-| `engineering-system-designer` | Capacity planning, failure analysis, scaling patterns (sharding, CQRS, consistent hashing), system design documents |
-
-### Design (3 skills)
-
-| Skill | What It Does |
-|-------|-------------|
-| `design-ui-designer` | Design tokens, component libraries, responsive layouts, light/dark themes, WCAG AA compliance, developer handoff specs |
-| `design-brand-guardian` | Brand identity systems, color/typography tokens, tone-of-voice guidelines, brand consistency enforcement |
-| `design-image-prompt-engineer` | AI image generation prompts for Midjourney/DALL-E/Stable Diffusion with real photography technique |
-
-### Testing (2 skills)
-
-| Skill | What It Does |
-|-------|-------------|
-| `testing-api-tester` | API test suites, contract testing, OWASP security validation, load testing, CI/CD integration |
-| `testing-evidence-collector` | QA verification with screenshots, Playwright evidence capture, spec compliance auditing |
-
-### Data & Marketing (2 skills)
-
-| Skill | What It Does |
-|-------|-------------|
-| `data-analytics-reporter` | Statistical analysis, dashboard creation, SQL optimization, A/B testing, churn prediction, business intelligence |
-| `marketing-app-store-optimizer` | ASO keyword research, screenshot A/B testing, metadata localization, conversion rate optimization |
-
-### Other (3 skills)
-
-| Skill | What It Does |
-|-------|-------------|
-| `project-manager-senior` | Spec analysis, task decomposition, dependency ordering, effort estimation, sprint planning |
-| `support-executive-summary-generator` | SCQA analysis, Pyramid Principle structuring, board-ready briefings, quantified impact assessments |
-| `xr-developer` | WebXR with A-Frame/Three.js/Babylon.js, spatial UI, hand tracking, LOD optimization, 72-90fps rendering |
+| `engineering-senior-developer` | Technology selection (language, database, API style), task estimation with hour budgets, refactoring decision rules, code review patterns, architecture decisions, performance profiling, debugging strategies |
+| `engineering-system-designer` | Capacity planning with formulas, failure analysis, scaling patterns (sharding, CQRS, consistent hashing), CAP tradeoff enforcement, system design documents |
+| `engineering-backend-architect` | Distributed systems patterns, database optimization with scaling thresholds, API design, circuit breakers, data migration rules, event-driven architecture |
+| `engineering-frontend-developer` | React/Vue/Svelte components, CSS debugging decision rules, SSR/Server Components patterns, build tooling selection, performance debugging workflow, WCAG accessibility |
+| `engineering-mobile-app-builder` | SwiftUI, Jetpack Compose, React Native, Flutter, platform-specific gotchas (iOS background limits, Android Doze), offline sync strategies, push notifications, biometric auth |
+| `engineering-ml-engineer` | PyTorch, HuggingFace Transformers, LoRA/QLoRA fine-tuning, RAG pipelines, scikit-learn, XGBoost, training strategy by data size, GPU memory tiers, model deployment |
+| `engineering-devops-automator` | Docker, Kubernetes, Terraform, CI/CD pipelines, cost estimation with dollar amounts, service selection decision trees, monitoring, secrets management |
+| `engineering-rapid-prototyper` | Next.js/Supabase/Prisma full-stack, shadcn/ui, tRPC, kill criteria, scope limits, hour-by-hour workflow, rapid MVP scaffolding |
+| `engineering-security-engineer` | STRIDE/DREAD threat modeling, OWASP Top 10 with test payloads, secrets management, supply chain security, API security, compliance (SOC 2, GDPR, HIPAA) |
 
 ## Requirements
 

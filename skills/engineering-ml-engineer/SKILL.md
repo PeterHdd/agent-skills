@@ -79,6 +79,30 @@ This guide covers end-to-end machine learning engineering with deep learning (Py
 - Implement model versioning and A/B testing.
 - Monitor performance metrics and latency in production.
 
+## Self-Verification Protocol
+After training or deploying any model, verify:
+- **Training verification**: Compare train loss vs validation loss curves. If val loss diverges after epoch N, the model is overfitting — stop training at epoch N and reduce model capacity or add regularization.
+- **Metric sanity check**: If accuracy is >99% on a real-world task, suspect data leakage. Check for: target variable in features, future data in training set, or duplicates across train/test splits.
+- **Baseline comparison**: Every model must beat a simple baseline. For classification: majority class predictor. For regression: mean predictor. For NLP: TF-IDF + logistic regression. If your transformer does not beat TF-IDF, the problem is data, not model architecture.
+- **Prediction spot-check**: Manually inspect 20 random predictions. If >3 look wrong to a domain expert, the model is not ready regardless of aggregate metrics.
+- **Inference verification**: After export (ONNX, quantized), compare outputs of the exported model vs the original on 100 test samples. If max absolute difference >0.01, the export introduced errors.
+- **Production smoke test**: After deploying, send 10 known inputs and verify outputs match expectations. Set up an alert for prediction distribution shift (>2 stddev from training distribution).
+
+## Failure Recovery
+- **Training loss not decreasing**: Check: (1) learning rate too high (reduce by 10x), (2) data loading bug (print 5 batches and verify labels match inputs), (3) model architecture issue (verify forward pass output shape), (4) gradient explosion (add gradient clipping at 1.0).
+- **OOM during training**: Reduce batch size by 50%. If still OOM, enable gradient checkpointing. If still OOM, switch to QLoRA (4-bit). If still OOM, use a smaller model.
+- **Fine-tuned model worse than base model**: Check: (1) learning rate too high (use 1e-5 for decoders), (2) training data quality (inspect 50 random examples), (3) training too long (reduce to 1-3 epochs), (4) wrong task format (SFT models need instruction-formatted data).
+- **RAG returns irrelevant chunks**: Check: (1) chunk size (try 256-512 tokens instead of larger), (2) embedding model mismatch (use same model for indexing and querying), (3) retrieval k too small (increase from 3 to 10, then rerank), (4) query needs reformulation (add a query rewrite step).
+- **Model latency too high in production**: Profile the pipeline end-to-end. Common fixes: quantize to INT8 (2x speedup), export to ONNX (2-4x speedup), reduce max sequence length, add KV-cache for autoregressive models, batch concurrent requests.
+- **Metrics look good but users complain**: The evaluation set does not represent real usage. Collect 100 real user queries, label them manually, and re-evaluate. This is now your primary test set.
+
+## Experiment Tracking Protocol
+- Every training run must log: model name, dataset version, hyperparameters, all metrics, training duration, and hardware used. Use MLflow, Weights & Biases, or at minimum a structured JSON log file.
+- Tag every model artifact with the git commit SHA of the training code and the dataset version hash. You must be able to reproduce any past result exactly.
+- Before starting a new experiment, write a one-sentence hypothesis: "Increasing LoRA rank from 8 to 32 will improve F1 by >2 points because the current model underfits on complex entity boundaries." If you cannot write this, you are experimenting randomly.
+- After each experiment, update a comparison table. Columns: experiment ID, hypothesis, config change, result, conclusion (confirmed/rejected/inconclusive).
+- Keep a "dead ends" log of approaches that did not work and why. This prevents repeating failed experiments and helps onboard new team members.
+
 ## Scripts
 
 - `scripts/estimate_gpu_memory.py` -- Estimate GPU VRAM requirements for model inference and training given parameter count and precision. Run with `--help` for options.

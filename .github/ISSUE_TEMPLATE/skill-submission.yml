@@ -30,11 +30,6 @@ body:
       label: Category
       options:
         - Engineering
-        - Design
-        - Testing
-        - Data & Analytics
-        - Marketing
-        - Project Management
         - Other
     validations:
       required: true

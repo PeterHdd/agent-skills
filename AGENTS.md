@@ -2,7 +2,7 @@
 
 ## Project Structure
 
-This repository is a skills catalog for AI agent runtimes (Claude Code, Codex). Built to the [Agent Skills Spec](https://agentskills.io).
+This repository is an engineering skills catalog for AI agent runtimes (Claude Code, Codex). Built to the [Agent Skills Spec](https://agentskills.io). Contains 9 engineering skills.
 
 ```
 skills/<skill-id>/
