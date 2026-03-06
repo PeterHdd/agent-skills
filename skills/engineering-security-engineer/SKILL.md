@@ -2,13 +2,27 @@
 name: engineering-security-engineer
 description: "Secure applications, infrastructure, and pipelines through threat modeling, vulnerability assessment, and security architecture. Use when you need OWASP Top 10 remediation, threat modeling (STRIDE/DREAD), penetration testing methodology, secrets management, dependency vulnerability scanning, authentication/authorization architecture, CSP and security headers, API security, supply chain security, compliance frameworks (SOC 2, GDPR, HIPAA), incident response, or security-focused code review."
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # Security Engineering Guide
 
 ## Overview
 This guide covers application security, infrastructure hardening, threat modeling, vulnerability management, and security operations. Use it when designing auth systems, reviewing code for security issues, setting up security scanning in CI/CD, responding to incidents, managing secrets, or ensuring compliance with security frameworks.
+
+## First 10 Minutes
+
+- Map the attack surface before suggesting fixes: public routes, auth entrypoints, admin paths, file upload/download flows, third-party callbacks, and secrets-loading paths.
+- Run `scripts/scan_secrets.sh` on the repo root first. Secret exposure changes priority immediately.
+- Run `scripts/audit_auth_surface.py` to inventory auth-related files and session/token patterns before reviewing login or authorization changes.
+- Identify the highest-risk trust boundary in the task: browser to API, API to service, service to database, or CI to cloud.
+
+## Refuse or Escalate
+
+- Refuse to approve security-sensitive changes that skip authorization checks, input validation, or audit logging "for later."
+- Escalate immediately when the task involves credential exposure, insecure direct object access in production, or suspected compromise.
+- Do not recommend weakening CSP, CORS, or cookie settings without documenting the exact breakage and the narrowest safe exception.
+- Escalate if the requested solution conflicts with legal or compliance obligations already named in the system.
 
 ## Threat Modeling
 
@@ -160,6 +174,13 @@ When assessing the security of an existing system:
 7. **Check data handling** (10 min) — Is PII encrypted at rest? Is all traffic over TLS? Are backups encrypted? Who has access to production data?
 8. **Prioritize findings** — Score each finding with DREAD. Present the top 5 by risk score with specific remediation steps and effort estimates.
 
+## Deliverables
+
+- Threat summary listing trust boundaries, likely abuse paths, and top risks by DREAD score.
+- Remediation plan with priority, exploit preconditions, and owner.
+- Verification checklist covering authz, secrets, headers, dependencies, and audit logs.
+- If the task is incident response: timeline, containment action, rotation status, and follow-up validation steps.
+
 ## Compliance Quick Reference
 
 ### SOC 2
@@ -197,6 +218,14 @@ Scan a directory or git repository for accidentally committed secrets. Checks fo
 scripts/scan_secrets.sh .
 scripts/scan_secrets.sh --git-history /path/to/repo
 scripts/scan_secrets.sh --format json /path/to/project
+```
+
+### `scripts/audit_auth_surface.py`
+Scan a repository for auth, session, token, cookie, and middleware hotspots. Use this before reviewing login flows, RBAC changes, or session security.
+
+```bash
+scripts/audit_auth_surface.py .
+scripts/audit_auth_surface.py /path/to/repo --top 20
 ```
 
 ## References

@@ -2,13 +2,27 @@
 name: engineering-devops-automator
 description: "Automate infrastructure provisioning, CI/CD pipelines, and cloud operations for reliable deployments. Use when you need Terraform infrastructure-as-code, Docker containerization, blue-green or canary deployments, monitoring and alerting setup, log aggregation, disaster recovery planning, secrets management, cost optimization, or multi-environment configuration with tools like Vault, ELK, Loki, or AWS."
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # DevOps & Infrastructure Guide
 
 ## Overview
 This guide covers infrastructure automation, CI/CD pipeline development, deployment strategies, monitoring, and cloud operations. Use it when provisioning infrastructure, building pipelines, setting up observability, managing secrets, or planning disaster recovery.
+
+## First 10 Minutes
+
+- Inventory the delivery surface before proposing changes: CI config, infrastructure directories, runtime manifests, Dockerfiles, and observability config.
+- Run the existing validation commands before editing anything. If the repo has no validation path for infra changes, add one as part of the task.
+- Use `scripts/analyze_deployment_risk.py` on the repo root to summarize CI, Docker, Terraform, and Kubernetes signals before proposing rollout changes.
+- Identify the rollback path for the current deploy system. If you cannot explain how to revert the change in under 5 minutes, the rollout plan is incomplete.
+
+## Refuse or Escalate
+
+- Refuse "just push it" requests when there is no rollback path, no health signal, or no way to test the change outside production.
+- Escalate before changing production state if the plan includes database replacement, Terraform destroys, state moves, certificate rotation, or security group broadening without a compensating control.
+- Escalate when the repo mixes multiple deployment systems and ownership boundaries are unclear. Untangling that is a separate task.
+- Do not recommend Kubernetes by default. If the workload is a single service with simple networking and predictable scale, stay with the simpler runtime.
 
 ## Infrastructure Decision Rules
 
@@ -121,6 +135,13 @@ See [Infrastructure & Monitoring Guide](references/infrastructure.md) for Terraf
 - Create automated security scanning and compliance reporting.
 - Build self-healing systems with automated recovery.
 
+## Deliverables
+
+- Deployment strategy with explicit rollback steps, health gates, and ownership.
+- Infrastructure change summary listing stateful resources, blast radius, and approval points.
+- CI/CD plan covering lint, test, build, scan, deploy, and post-deploy verification.
+- Monitoring and alert checklist tied to the changed services, not a generic dashboard wishlist.
+
 ## References
 
 - [CI/CD Pipeline Guide](references/cicd-pipeline.md) -- GitHub Actions pipeline with security scanning, container build, and blue-green deployment.
@@ -128,3 +149,5 @@ See [Infrastructure & Monitoring Guide](references/infrastructure.md) for Terraf
 - [Kubernetes Patterns](references/kubernetes.md) -- Production Deployment, HPA, PDB, ConfigMap/Secret mounting, Ingress with TLS, CronJob, and Helm values.
 - [Docker Best Practices](references/docker.md) -- Multi-stage Dockerfiles (Node.js, Python, Go), .dockerignore, Docker Compose, and Trivy scanning.
 - [Monitoring & Observability](references/observability.md) -- Structured logging, Prometheus metrics, Grafana dashboard, alert rules, OpenTelemetry tracing, and health checks.
+- [Incident Triage](references/incident-triage.md) -- Repo-first production incident flow, rollback decision tree, and evidence capture checklist.
+- [Deployment Rollback Guide](references/deployment-rollbacks.md) -- Canary, blue-green, rolling, schema-change, and feature-flag rollback patterns.

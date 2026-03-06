@@ -2,13 +2,27 @@
 name: engineering-ml-engineer
 description: "Build and deploy machine learning models with PyTorch, HuggingFace Transformers, and scikit-learn. Use when you need model training, fine-tuning with LoRA/QLoRA, text classification, NER, embeddings, RAG pipelines, dataset preparation, model evaluation, hyperparameter tuning, ONNX export, quantization, inference optimization, or classical ML with XGBoost and scikit-learn."
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # Machine Learning Engineering Guide
 
 ## Overview
 This guide covers end-to-end machine learning engineering with deep learning (PyTorch, HuggingFace Transformers) and classical ML (scikit-learn, XGBoost). Use it when building, training, evaluating, and deploying ML models across NLP, vision, and tabular domains.
+
+## First 10 Minutes
+
+- Identify the task type first: classification, regression, ranking, generation, retrieval, or multimodal. If the task type is fuzzy, the evaluation plan will be wrong.
+- Inspect the dataset shape and leakage risk before model choice. Use `scripts/analyze_dataset.py` immediately, then document label balance, missing values, and leakage candidates.
+- Define the baseline and acceptance metric before training. If there is no baseline, create one first.
+- If the request involves RAG, separate retrieval evaluation from answer evaluation from the start.
+
+## Refuse or Escalate
+
+- Refuse requests to fine-tune when there is no labeled data, no evaluation set, or no baseline to beat.
+- Escalate if the task is high-stakes and the user cannot provide evaluation criteria, data provenance, or rollback behavior for a bad model.
+- Do not recommend a larger model by default when the failure is clearly dataset quality, leakage, or retrieval mismatch.
+- Escalate before production rollout if the team cannot monitor latency, output drift, and failure rate after deployment.
 
 ## Training Strategy Decision Rules
 
@@ -79,6 +93,13 @@ This guide covers end-to-end machine learning engineering with deep learning (Py
 - Implement model versioning and A/B testing.
 - Monitor performance metrics and latency in production.
 
+## Deliverables
+
+- Problem framing with task type, target metric, baseline, and acceptance threshold.
+- Dataset summary covering volume, label quality, split strategy, and leakage risks.
+- Experiment summary showing what changed, why it changed, and whether it beat baseline.
+- Deployment note with latency target, rollback strategy, and production smoke-test inputs.
+
 ## Self-Verification Protocol
 After training or deploying any model, verify:
 - **Training verification**: Compare train loss vs validation loss curves. If val loss diverges after epoch N, the model is overfitting — stop training at epoch N and reduce model capacity or add regularization.
@@ -107,6 +128,7 @@ After training or deploying any model, verify:
 
 - `scripts/estimate_gpu_memory.py` -- Estimate GPU VRAM requirements for model inference and training given parameter count and precision. Run with `--help` for options.
 - `scripts/analyze_dataset.py` -- Analyze a CSV file and report row/column counts, types, missing values, class distribution, and text column statistics. Run with `--help` for options.
+- `scripts/summarize_eval.py` -- Summarize model metrics from JSON or CSV experiment outputs and compare runs in a markdown table.
 
 ## Reference
 
@@ -115,3 +137,5 @@ See [Fine-Tuning Guide](references/fine-tuning.md) for LoRA, QLoRA, SFTTrainer, 
 See [Deployment Patterns](references/deployment.md) for ONNX export, quantization, vLLM serving, TorchServe, and inference optimization.
 See [Classical ML Patterns](references/classical-ml.md) for scikit-learn pipelines, XGBoost, LightGBM, feature engineering, and model evaluation.
 See [RAG Patterns](references/rag-patterns.md) for embedding generation, vector stores, chunking, retrieval, reranking, and end-to-end RAG pipelines.
+See [Dataset Triage](references/dataset-triage.md) for leakage checks, label-quality review, and split-selection workflow.
+See [Evaluation Playbook](references/evaluation-playbook.md) for baseline design, metric selection, and production acceptance gates.
