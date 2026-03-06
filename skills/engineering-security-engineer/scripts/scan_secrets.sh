@@ -57,7 +57,8 @@ PATTERNS=(
     "GitLab Token:glpat-[A-Za-z0-9_-]{20,}"
     "Slack Token:xox[bpras]-[0-9a-zA-Z-]+"
     "Generic API Key:(?i)(api[_-]?key|apikey)\s*[=:]\s*['\"]?[A-Za-z0-9_-]{20,}['\"]?"
-    "Generic Secret:(?i)(secret|password|passwd|pwd)\s*[=:]\s*['\"]?[A-Za-z0-9!@#$%^&*_-]{8,}['\"]?"
+    "Generic Secret:(?i)(secret|client_secret|app_secret|password|passwd|pwd|token|channelpassword|walletcardchannelpassword)\s*['\"]?\s*[:=]\s*['\"]?[A-Za-z0-9!@#$%^&*./+=:_-]{8,}['\"]?"
+    "Quoted Credential Assignment:(?i)['\"][A-Za-z0-9_.-]*(secret|token|password|key)['\"]\s*:\s*['\"][A-Za-z0-9!@#$%^&*./+=:_-]{8,}['\"]"
     "Database URL:(?i)(postgres|mysql|mongodb|redis)://[^:]+:[^@]+@"
     "JWT Secret:(?i)(jwt[_-]?secret|jwt[_-]?key)\s*[=:]\s*['\"]?[A-Za-z0-9_-]{8,}['\"]?"
 )
@@ -67,18 +68,23 @@ FINDING_COUNT=0
 
 scan_file() {
     local file="$1"
-    # Skip binary files, lock files, node_modules, .git
-    if file "$file" 2>/dev/null | grep -q "binary\|executable"; then return; fi
+    # Skip obvious binary files and generated/vendor trees
+    if ! grep -Iq . "$file" 2>/dev/null; then return; fi
     case "$file" in
         *.lock|*.min.js|*.min.css|*.map) return ;;
-        */node_modules/*|*/.git/*|*/vendor/*|*/__pycache__/*) return ;;
+        */node_modules/*|*/.git/*|*/vendor/*|*/__pycache__/*|*/www/*|*/platforms/*|*/Pods/*|*/dist/*|*/build/*|*/coverage/*) return ;;
     esac
 
     for pattern_entry in "${PATTERNS[@]}"; do
         local name="${pattern_entry%%:*}"
         local regex="${pattern_entry#*:}"
         local matches
-        matches=$(grep -nP "$regex" "$file" 2>/dev/null || true)
+        matches=$(PATTERN_REGEX="$regex" perl -ne '
+            my $re = $ENV{"PATTERN_REGEX"};
+            if (/$re/) {
+                print $. . ":" . $_;
+            }
+        ' "$file" 2>/dev/null || true)
         if [[ -n "$matches" ]]; then
             while IFS= read -r match; do
                 local line_num="${match%%:*}"
@@ -103,7 +109,16 @@ if $SCAN_GIT; then
     # Scan current files and recent git history
     while IFS= read -r -d '' file; do
         scan_file "$file"
-    done < <(find "$TARGET_PATH" -type f -not -path '*/.git/*' -not -path '*/node_modules/*' -print0 2>/dev/null)
+    done < <(find "$TARGET_PATH" -type f \
+        -not -path '*/.git/*' \
+        -not -path '*/node_modules/*' \
+        -not -path '*/vendor/*' \
+        -not -path '*/www/*' \
+        -not -path '*/platforms/*' \
+        -not -path '*/Pods/*' \
+        -not -path '*/dist/*' \
+        -not -path '*/build/*' \
+        -print0 2>/dev/null)
     # Also check git log for secrets in diffs
     git -C "$TARGET_PATH" log --all --diff-filter=A --name-only --pretty=format: 2>/dev/null | sort -u | while IFS= read -r file; do
         [[ -z "$file" ]] && continue
@@ -112,7 +127,16 @@ if $SCAN_GIT; then
 else
     while IFS= read -r -d '' file; do
         scan_file "$file"
-    done < <(find "$TARGET_PATH" -type f -not -path '*/.git/*' -not -path '*/node_modules/*' -not -path '*/vendor/*' -print0 2>/dev/null)
+    done < <(find "$TARGET_PATH" -type f \
+        -not -path '*/.git/*' \
+        -not -path '*/node_modules/*' \
+        -not -path '*/vendor/*' \
+        -not -path '*/www/*' \
+        -not -path '*/platforms/*' \
+        -not -path '*/Pods/*' \
+        -not -path '*/dist/*' \
+        -not -path '*/build/*' \
+        -print0 2>/dev/null)
 fi
 
 # Output results

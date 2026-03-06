@@ -14,7 +14,10 @@ PATTERNS = {
     "session": re.compile(r"\b(session|cookie|csrf|samesite|httponly)\b", re.I),
     "password": re.compile(r"\b(password|passwd|bcrypt|argon2|otp|mfa|2fa)\b", re.I),
 }
-SKIP_PARTS = {".git", "node_modules", "vendor", "__pycache__", ".next", "dist", "build"}
+SKIP_PARTS = {
+    ".git", "node_modules", "vendor", "__pycache__", ".next", "dist", "build",
+    "www", "platforms", "Pods", "coverage"
+}
 TEXT_SUFFIXES = {
     ".js", ".jsx", ".ts", ".tsx", ".py", ".go", ".rb", ".java", ".kt", ".php",
     ".cs", ".rs", ".md", ".yml", ".yaml", ".json", ".env", ".toml", ".ini",
