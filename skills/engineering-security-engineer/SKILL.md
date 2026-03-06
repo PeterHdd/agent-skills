@@ -2,7 +2,7 @@
 name: engineering-security-engineer
 description: "Secure applications, infrastructure, and pipelines through threat modeling, vulnerability assessment, and security architecture. Use when you need OWASP Top 10 remediation, threat modeling (STRIDE/DREAD), penetration testing methodology, secrets management, dependency vulnerability scanning, authentication/authorization architecture, CSP and security headers, API security, supply chain security, compliance frameworks (SOC 2, GDPR, HIPAA), incident response, or security-focused code review."
 metadata:
-  version: "1.1.0"
+  version: "1.1.1"
 ---
 
 # Security Engineering Guide
@@ -13,8 +13,10 @@ This guide covers application security, infrastructure hardening, threat modelin
 ## First 10 Minutes
 
 - Map the attack surface before suggesting fixes: public routes, auth entrypoints, admin paths, file upload/download flows, third-party callbacks, and secrets-loading paths.
-- Run `scripts/scan_secrets.sh` on the repo root first. Secret exposure changes priority immediately.
-- Run `scripts/audit_auth_surface.py` to inventory auth-related files and session/token patterns before reviewing login or authorization changes.
+- Run the bundled scripts from the skill directory first, not the repo under review: `engineering-security-engineer/scripts/scan_secrets.sh` and `engineering-security-engineer/scripts/audit_auth_surface.py`.
+- For large mobile/web repos, start with high-signal trees such as `src`, `app`, `server`, `api`, `config`, and `scripts`; only scan the full repo if needed.
+- Use `scripts/scan_secrets.sh` first. Secret exposure changes priority immediately.
+- Use `scripts/audit_auth_surface.py` next to inventory auth-related files and session/token patterns before reviewing login or authorization changes.
 - Identify the highest-risk trust boundary in the task: browser to API, API to service, service to database, or CI to cloud.
 
 ## Refuse or Escalate
@@ -212,7 +214,7 @@ scripts/check_security_headers.sh --json https://api.yourapp.com
 ```
 
 ### `scripts/scan_secrets.sh`
-Scan a directory or git repository for accidentally committed secrets. Checks for: API keys, AWS credentials, private keys, database connection strings, JWT secrets, and common secret patterns. Reports file, line number, and secret type.
+Scan a directory or git repository for accidentally committed secrets. Checks for: API keys, AWS credentials, private keys, database connection strings, JWT secrets, generic token assignments, and common credential patterns. By default it skips generated/vendor trees such as `www/`, `platforms/`, `Pods/`, `dist/`, and `build/` to reduce noise.
 
 ```bash
 scripts/scan_secrets.sh .
@@ -221,7 +223,7 @@ scripts/scan_secrets.sh --format json /path/to/project
 ```
 
 ### `scripts/audit_auth_surface.py`
-Scan a repository for auth, session, token, cookie, and middleware hotspots. Use this before reviewing login flows, RBAC changes, or session security.
+Scan a repository for auth, session, token, cookie, and middleware hotspots. By default it skips generated/vendor trees such as `www/`, `platforms/`, `Pods/`, `dist/`, and `build/`. Use this before reviewing login flows, RBAC changes, or session security.
 
 ```bash
 scripts/audit_auth_surface.py .
