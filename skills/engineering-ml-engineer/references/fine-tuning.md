@@ -2,6 +2,8 @@
 
 Production-grade patterns for LoRA, QLoRA, instruction tuning, and hyperparameter optimization.
 
+Use locally curated datasets by default. If you mirror a public dataset or model, pin the exact revision in code and log that revision with the run metadata before training.
+
 ## LoRA with PEFT: Full Working Example
 
 ```python
@@ -23,14 +25,21 @@ from datasets import load_dataset
 
 # 1. Load base model and tokenizer
 model_name = "meta-llama/Llama-2-7b-hf"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
+model_revision = "3f2b9c8"
+tokenizer = AutoTokenizer.from_pretrained(
+    model_name,
+    revision=model_revision,
+    trust_remote_code=False,
+)
 tokenizer.pad_token = tokenizer.eos_token
 tokenizer.padding_side = "right"
 
 model = AutoModelForCausalLM.from_pretrained(
     model_name,
+    revision=model_revision,
     torch_dtype=torch.bfloat16,
     device_map="auto",
+    trust_remote_code=False,
 )
 
 # 2. Configure LoRA
@@ -57,7 +66,11 @@ model.print_trainable_parameters()
 # trainable params: 4,194,304 || all params: 6,742,609,920 || trainable%: 0.0622
 
 # 4. Load and preprocess dataset
-dataset = load_dataset("tatsu-lab/alpaca", split="train")
+dataset = load_dataset(
+    "json",
+    data_files={"train": "data/instruction/train.jsonl"},
+    split="train",
+)
 
 def format_instruction(example):
     if example["input"]:
@@ -126,8 +139,10 @@ from peft import PeftModel
 
 base_model = AutoModelForCausalLM.from_pretrained(
     model_name,
+    revision=model_revision,
     torch_dtype=torch.bfloat16,
     device_map="auto",
+    trust_remote_code=False,
 )
 merged_model = PeftModel.from_pretrained(base_model, "./lora_adapter")
 merged_model = merged_model.merge_and_unload()
@@ -215,17 +230,28 @@ from datasets import load_dataset
 from peft import LoraConfig
 
 model_name = "meta-llama/Llama-2-7b-hf"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
+model_revision = "3f2b9c8"
+tokenizer = AutoTokenizer.from_pretrained(
+    model_name,
+    revision=model_revision,
+    trust_remote_code=False,
+)
 tokenizer.pad_token = tokenizer.eos_token
 
 model = AutoModelForCausalLM.from_pretrained(
     model_name,
+    revision=model_revision,
     torch_dtype="auto",
     device_map="auto",
+    trust_remote_code=False,
 )
 
 # Dataset with "text" column containing formatted instructions
-dataset = load_dataset("timdettmers/openassistant-guanaco", split="train")
+dataset = load_dataset(
+    "json",
+    data_files={"train": "data/instruction/train.jsonl"},
+    split="train",
+)
 
 # LoRA configuration
 peft_config = LoraConfig(
@@ -294,7 +320,13 @@ import numpy as np
 from sklearn.metrics import f1_score
 
 tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
-dataset = load_dataset("imdb")
+dataset = load_dataset(
+    "csv",
+    data_files={
+        "train": "data/textcls/train.csv",
+        "test": "data/textcls/test.csv",
+    },
+)
 
 def tokenize(examples):
     return tokenizer(examples["text"], truncation=True, max_length=512)

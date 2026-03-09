@@ -2,6 +2,8 @@
 
 Production-grade patterns for inference, training, and evaluation with HuggingFace Transformers.
 
+Prefer locally mirrored model and dataset artifacts in production code. If a workflow must pull from a public registry, pin the exact revision, keep `trust_remote_code=False`, and record the source in the experiment or deployment metadata.
+
 ## Model and Tokenizer Loading
 
 ```python
@@ -10,12 +12,19 @@ import torch
 
 # Basic loading with automatic device placement
 model_name = "bert-base-uncased"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
+model_revision = "main"
+tokenizer = AutoTokenizer.from_pretrained(
+    model_name,
+    revision=model_revision,
+    trust_remote_code=False,
+)
 model = AutoModelForSequenceClassification.from_pretrained(
     model_name,
+    revision=model_revision,
     num_labels=3,
     torch_dtype=torch.float16,
     device_map="auto",  # Automatically places layers across available GPUs
+    trust_remote_code=False,
 )
 
 # Loading a large model across multiple GPUs with offloading
@@ -23,6 +32,7 @@ from transformers import AutoModelForCausalLM
 
 model = AutoModelForCausalLM.from_pretrained(
     "meta-llama/Llama-2-7b-hf",
+    revision="3f2b9c8",
     torch_dtype=torch.bfloat16,
     device_map="auto",
     offload_folder="offload",        # Offload to disk if GPU memory insufficient
@@ -42,8 +52,10 @@ device_map = {
 }
 model = AutoModelForCausalLM.from_pretrained(
     "meta-llama/Llama-2-7b-hf",
+    revision="3f2b9c8",
     device_map=device_map,
     torch_dtype=torch.bfloat16,
+    trust_remote_code=False,
 )
 ```
 
@@ -121,9 +133,6 @@ from transformers import AutoTokenizer
 
 tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
 
-# Load from HuggingFace Hub
-dataset = load_dataset("imdb")  # Returns DatasetDict with train/test splits
-
 # Load from local CSV files
 dataset = load_dataset("csv", data_files={
     "train": "data/train.csv",
@@ -200,11 +209,20 @@ from transformers import (
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
 # Load data and model
-dataset = load_dataset("imdb")
-tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
+dataset = load_dataset("csv", data_files={
+    "train": "data/train.csv",
+    "test": "data/test.csv",
+})
+tokenizer = AutoTokenizer.from_pretrained(
+    "distilbert-base-uncased",
+    revision="main",
+    trust_remote_code=False,
+)
 model = AutoModelForSequenceClassification.from_pretrained(
     "distilbert-base-uncased",
+    revision="main",
     num_labels=2,
+    trust_remote_code=False,
 )
 
 # Tokenize
@@ -285,16 +303,25 @@ from datasets import load_dataset
 import numpy as np
 from seqeval.metrics import classification_report, f1_score as seqeval_f1
 
-dataset = load_dataset("conll2003")
+dataset = load_dataset("json", data_files={
+    "train": "data/ner/train.jsonl",
+    "validation": "data/ner/validation.jsonl",
+})
 label_names = dataset["train"].features["ner_tags"].feature.names
 # ['O', 'B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC', 'B-MISC', 'I-MISC']
 
-tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
+tokenizer = AutoTokenizer.from_pretrained(
+    "bert-base-cased",
+    revision="main",
+    trust_remote_code=False,
+)
 model = AutoModelForTokenClassification.from_pretrained(
     "bert-base-cased",
+    revision="main",
     num_labels=len(label_names),
     id2label={i: l for i, l in enumerate(label_names)},
     label2id={l: i for i, l in enumerate(label_names)},
+    trust_remote_code=False,
 )
 
 # Tokenize and align labels (see tokenize_and_align_labels above)
