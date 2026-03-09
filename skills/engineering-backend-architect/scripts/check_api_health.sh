@@ -3,7 +3,7 @@
 # check_api_health.sh -- Probe common health endpoints on a base URL.
 #
 # Checks /health, /healthz, /ready, /api/health, /api/v1/health and reports
-# status code, response time, and response body preview for each.
+# status code, response time, and content type for each.
 #
 # Exits 0 if any health endpoint responds with HTTP 200, 1 otherwise.
 #
@@ -21,6 +21,7 @@ HEALTH_PATHS=(
     "/api/health"
     "/api/v1/health"
 )
+URL_PATTERN='^https?://[A-Za-z0-9.-]+(:[0-9]+)?(/[A-Za-z0-9._~:/?#\\[\\]@!$&'\''()*+,;=-]*)?$'
 
 usage() {
     cat <<EOF
@@ -73,25 +74,26 @@ any_healthy=false
 
 echo "## Health Check: ${BASE_URL}"
 echo ""
-echo "| Endpoint | Status | Response Time | Body Preview |"
+echo "| Endpoint | Status | Response Time | Content Type |"
 echo "|---|---|---|---|"
+
+if [[ ! "$BASE_URL" =~ $URL_PATTERN ]]; then
+    echo "Error: base-url must be a valid http or https URL" >&2
+    exit 1
+fi
 
 for path in "${HEALTH_PATHS[@]}"; do
     url="${BASE_URL}${path}"
 
-    # Use curl to get status code, time, and body
-    response=$(curl -s -o /dev/null -w "%{http_code} %{time_total}" \
+    # Use curl to get status code, time, and content type without ingesting the body.
+    response=$(curl -s -o /dev/null -w "%{http_code} %{time_total} %{content_type}" \
         --connect-timeout 5 \
         --max-time 10 \
         "$url" 2>/dev/null) || true
 
     status_code=$(echo "$response" | awk '{print $1}')
     response_time=$(echo "$response" | awk '{print $2}')
-
-    # Get body separately (truncated)
-    body=$(curl -s --connect-timeout 5 --max-time 10 "$url" 2>/dev/null | head -c 120) || true
-    # Escape pipe characters for markdown table
-    body=$(echo "$body" | tr '\n' ' ' | sed 's/|/\\|/g')
+    content_type=$(echo "$response" | awk '{print $3}')
 
     if [[ -z "$status_code" || "$status_code" == "000" ]]; then
         echo "| \`${path}\` | Connection failed | - | - |"
@@ -104,6 +106,10 @@ for path in "${HEALTH_PATHS[@]}"; do
             time_display="-"
         fi
 
+        if [[ -z "$content_type" ]]; then
+            content_type="-"
+        fi
+
         # Status indicator
         if [[ "$status_code" == "200" ]]; then
             status_display="200 OK"
@@ -112,7 +118,7 @@ for path in "${HEALTH_PATHS[@]}"; do
             status_display="${status_code}"
         fi
 
-        echo "| \`${path}\` | ${status_display} | ${time_display} | ${body:-(empty)} |"
+        echo "| \`${path}\` | ${status_display} | ${time_display} | ${content_type} |"
     fi
 done
 
