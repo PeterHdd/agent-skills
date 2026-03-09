@@ -2,7 +2,7 @@
 name: engineering-mobile-app-builder
 description: "Build native and cross-platform mobile applications for iOS and Android with optimized performance and platform integration. Use when you need SwiftUI or Jetpack Compose development, React Native or Flutter cross-platform apps, offline-first architecture, biometric authentication, push notifications, deep linking, app startup optimization, or mobile-specific UX patterns and gesture handling."
 metadata:
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # Mobile Development Guide
@@ -37,7 +37,7 @@ This guide covers native iOS/Android development (SwiftUI, Jetpack Compose) and 
 - Biometric auth: `LAContext` (iOS) / `BiometricPrompt` (Android) with passcode fallback; never store raw biometric data. If device lacks biometrics, fall back to device passcode — never skip auth entirely. Store auth tokens in Keychain (iOS) / AndroidKeystore with `setUserAuthenticationRequired(true)`.
 - Camera: request permissions just-in-time, handle denial with settings deep link. If permission denied twice, show inline explanation with "Open Settings" button — never re-prompt via system dialog (iOS blocks it).
 - Push notifications: APNs (iOS) / FCM (Android) with topic-based subscription. Request permission only after user performs an action that benefits from notifications — never on first launch. If user declines, store preference and show in-app toggle; re-prompt only after 30 days.
-- In-app purchases: StoreKit 2 (iOS) / Google Play Billing Library 6+ (Android) with server-side receipt validation. Never trust client-side purchase verification alone. Implement restore purchases flow on first launch for returning users. Handle interrupted purchases (app killed mid-transaction) with `Transaction.unfinished` (iOS) / `queryPurchasesAsync` (Android).
+- Do not implement or trigger purchase, billing, payout, or other money-movement flows from this skill. If the user needs in-app purchases, limit guidance to entitlement modeling, receipt-validation architecture, audit requirements, and platform-policy review; route transaction execution details to a dedicated payments review.
 - Deep linking: use Universal Links (iOS) / App Links (Android) — not custom URL schemes. Validate `apple-app-site-association` and `assetlinks.json` are served from the domain with correct content-type. Test deferred deep links for users who install after clicking link.
 
 ## Platform-Specific UI
@@ -64,7 +64,7 @@ See [Performance Patterns](references/performance.md) for Hermes engine config, 
 
 See [State Management](references/state-management.md) for Zustand with MMKV persistence, TanStack Query optimistic mutations, SwiftUI @Observable with environment injection, Compose ViewModel + StateFlow + SavedStateHandle, navigation deep linking, auth state machines, and form validation.
 
-See [Native APIs](references/native-apis.md) for push notifications (APNs, FCM, react-native-firebase), camera/photo (CameraX, AVFoundation, vision-camera), biometric auth (FaceID/TouchID, BiometricPrompt), background tasks (BGTaskScheduler, WorkManager), and in-app purchases (StoreKit 2, Google Play Billing).
+See [Native APIs](references/native-apis.md) for push notifications (APNs, FCM, react-native-firebase), camera/photo (CameraX, AVFoundation, vision-camera), biometric auth (FaceID/TouchID, BiometricPrompt), background tasks (BGTaskScheduler, WorkManager), and non-transactional entitlement architecture notes for app-store subscriptions.
 
 ## Platform-Specific Gotchas
 
