@@ -2,7 +2,7 @@
 name: engineering-devops-automator
 description: "Automate infrastructure provisioning, CI/CD pipelines, and cloud operations for reliable deployments. Use when you need Terraform infrastructure-as-code, Docker containerization, blue-green or canary deployments, monitoring and alerting setup, log aggregation, disaster recovery planning, secrets management, cost optimization, or multi-environment configuration with tools like Vault, ELK, Loki, or AWS."
 metadata:
-  version: "1.1.0"
+  version: "1.1.1"
 ---
 
 # DevOps & Infrastructure Guide
