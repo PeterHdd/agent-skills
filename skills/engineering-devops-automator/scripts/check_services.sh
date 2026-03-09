@@ -12,6 +12,7 @@
 set -euo pipefail
 
 TIMEOUT=5  # seconds
+HOST_PATTERN='^[A-Za-z0-9][A-Za-z0-9.-]*[A-Za-z0-9]$|^[A-Za-z0-9]$'
 
 usage() {
     cat <<EOF
@@ -55,6 +56,10 @@ while [[ $# -gt 0 ]]; do
                 echo "Error: --timeout requires a value" >&2
                 exit 2
             fi
+            if [[ ! "$2" =~ ^[0-9]+$ ]] || [[ "$2" -lt 1 ]]; then
+                echo "Error: --timeout must be a positive integer" >&2
+                exit 2
+            fi
             TIMEOUT="$2"
             shift 2
             ;;
@@ -96,7 +101,7 @@ check_tcp() {
 
     # Try bash /dev/tcp as fallback
     if command -v bash &> /dev/null; then
-        if timeout "$TIMEOUT" bash -c "echo > /dev/tcp/$host/$port" 2>/dev/null; then
+        if timeout "$TIMEOUT" bash -c 'exec 3<>"/dev/tcp/$1/$2"' -- "$host" "$port" 2>/dev/null; then
             return 0
         fi
         return 1
@@ -125,8 +130,9 @@ all_healthy=true
 index=0
 
 for service in "${SERVICES[@]}"; do
-    # Trim whitespace
-    service=$(echo "$service" | xargs)
+    # Trim leading/trailing whitespace without spawning subprocesses.
+    service="${service#"${service%%[![:space:]]*}"}"
+    service="${service%"${service##*[![:space:]]}"}"
     index=$((index + 1))
 
     # Validate host:port format
@@ -138,6 +144,12 @@ for service in "${SERVICES[@]}"; do
 
     host="${BASH_REMATCH[1]}"
     port="${BASH_REMATCH[2]}"
+
+    if [[ ! "$host" =~ $HOST_PATTERN ]] || [[ "$host" == *..* ]]; then
+        echo "| $index | \`${host}:${port}\` | INVALID HOST |"
+        all_healthy=false
+        continue
+    fi
 
     if check_tcp "$host" "$port"; then
         echo "| $index | \`${host}:${port}\` | UP |"

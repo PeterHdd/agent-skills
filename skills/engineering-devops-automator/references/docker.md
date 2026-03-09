@@ -114,7 +114,7 @@ services:
       - "8080:8080"
     environment:
       NODE_ENV: development
-      DATABASE_URL: postgresql://app:devpassword@postgres:5432/appdb
+      DATABASE_URL: postgresql://app:${POSTGRES_PASSWORD}@postgres:5432/appdb
       REDIS_URL: redis://redis:6379
       SMTP_HOST: mailhog
       SMTP_PORT: 1025
@@ -133,7 +133,7 @@ services:
     environment:
       POSTGRES_DB: appdb
       POSTGRES_USER: app
-      POSTGRES_PASSWORD: devpassword
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -167,6 +167,8 @@ volumes:
   pgdata:
   redisdata:
 ```
+
+Set `POSTGRES_PASSWORD` in a local `.env` file or your shell before starting Compose. Keep that value out of version control and use a separate secret source in non-local environments.
 
 ## Container Security Scanning
 
